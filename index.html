@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mid-Term Exam — English through Films</title>
+<style>
+  :root {
+    --navy: #292C74; --navy-dark: #1d1f54; --gold: #EABD2C;
+    --bg: #f5f5f8; --card: #ffffff; --border: #dcdce3; --text: #1a1a1a; --muted: #5f6370;
+    --accent-bg: #f0effa; --ok: #2e7d32; --warn: #b8860b; --danger: #c62828;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.5;
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  body.exam-on { padding-top: calc(60px + env(safe-area-inset-top, 0px)); }
+
+  /* Anti-copy: no text selection in the exam (inputs excepted) */
+  body.exam-on, body.exam-on * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-user-drag: none; }
+  input[type="text"] { -webkit-user-select: text; user-select: text; }
+
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50; height: calc(60px + env(safe-area-inset-top, 0px));
+    padding: env(safe-area-inset-top, 0px) 16px 0; background: var(--navy); color: #fff;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    border-bottom: 3px solid var(--gold);
+  }
+  .topbar .ttl { font-weight: 700; font-size: 14px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topbar .ttl small { display: block; font-weight: 400; opacity: .8; font-size: 11px; }
+  .timer-box { text-align: right; flex-shrink: 0; }
+  .timer-box .lbl { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; opacity: .8; display: block; }
+  .timer { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .timer.warn { color: var(--gold); }
+  .timer.danger { color: #ff8a80; animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity: .55; } }
+
+  .wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px 120px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; margin-bottom: 18px; }
+
+  .start h1 { margin: 0 0 4px; color: var(--navy); font-size: clamp(22px, 4vw, 28px); }
+  .start .sub { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+  .start h2 { font-size: 15px; color: var(--navy); margin: 18px 0 8px; }
+  .start ul { margin: 0 0 12px; padding-left: 20px; font-size: 14px; }
+  .start li { margin-bottom: 5px; }
+  .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; margin: 14px 0; }
+  @media (max-width: 560px) { .fields { grid-template-columns: 1fr; } }
+  .fields label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+  .fields input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; font-family: inherit; }
+  .consent { font-size: 13.5px; display: flex; gap: 8px; align-items: flex-start; margin: 12px 0 16px; }
+  .err { color: var(--danger); font-size: 13px; min-height: 18px; margin-bottom: 8px; }
+
+  button { font-family: inherit; font-weight: 600; font-size: 14px; border-radius: 9px; padding: 11px 20px; cursor: pointer; border: none; }
+  .btn-primary { background: var(--navy); color: #fff; } .btn-primary:hover { background: var(--navy-dark); }
+  .btn-gold { background: var(--gold); color: #1a1a1a; }
+  .btn-ghost { background: #fff; color: var(--text); border: 1px solid var(--border); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+
+  .qmap h3 { margin: 0 0 10px; font-size: 14px; color: var(--navy); }
+  .qmap .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; }
+  @media (max-width: 560px) { .qmap .grid { grid-template-columns: repeat(7, 1fr); } }
+  .qmap button { padding: 7px 0; font-size: 12px; background: #fff; border: 1px solid var(--border); color: var(--text); border-radius: 6px; }
+  .qmap button.done { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .qmap .legend { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+  .sec-head { margin: 28px 0 10px; }
+  .sec-head h2 { margin: 0; font-size: 18px; color: var(--navy); border-bottom: 3px solid var(--gold); padding-bottom: 6px; }
+  .sec-head p { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+
+  .q-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; scroll-margin-top: 80px; }
+  .q-num { font-size: 12px; font-weight: 800; color: #b08a00; display: block; margin-bottom: 4px; }
+  .q-ctx { font-style: italic; margin: 0 0 6px; font-size: 14.5px; color: #2b2d55; overflow-wrap: anywhere; }
+  .q-text { margin: 0 0 10px; font-size: 14.5px; font-weight: 600; overflow-wrap: anywhere; }
+  .opts { display: grid; gap: 6px; }
+  .opt { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; position: relative; overflow-wrap: anywhere; }
+  .opt:hover { background: var(--accent-bg); }
+  .opt input { position: absolute; opacity: 0; pointer-events: none; }
+  .opt .mark { font-size: 15px; line-height: 1.2; color: var(--navy); flex-shrink: 0; }
+  .opt .let { font-weight: 700; flex-shrink: 0; color: var(--navy); }
+  .opt.sel { border-color: var(--navy); background: var(--accent-bg); font-weight: 600; }
+  body.locked .opt { pointer-events: none; opacity: .85; }
+
+  .toolbar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 40; background: rgba(255,255,255,.97); border-top: 1px solid var(--border);
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); }
+  .toolbar .in { max-width: 860px; margin: 0 auto; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .toolbar .prog { font-size: 13px; color: var(--muted); margin-right: auto; }
+  .toolbar .tip { width: 100%; font-size: 11.5px; color: var(--muted); }
+
+  .banner { background: #fff4e5; border: 1px solid #f0c27b; border-left: 5px solid var(--warn); color: #5a3d00; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
+  .banner.danger { background: #fdecea; border-color: #f1a9a0; border-left-color: var(--danger); color: #7a1c14; }
+
+  .toast { position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%); background: #222; color: #fff; padding: 10px 16px; border-radius: 8px;
+    font-size: 13px; z-index: 80; opacity: 0; pointer-events: none; transition: opacity .2s; max-width: 90vw; text-align: center; }
+  .toast.show { opacity: 1; }
+
+  .modal { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.65); display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .modal .box { background: #fff; border-radius: 14px; max-width: 460px; width: 100%; padding: 24px; border-top: 6px solid var(--danger); text-align: center; }
+  .modal h3 { margin: 0 0 8px; color: var(--danger); font-size: 22px; letter-spacing: .04em; }
+  .modal p { margin: 0 0 18px; font-size: 15px; }
+
+  .print-only { display: none; }
+
+  /* ---------- PRINT / SAVE AS PDF ---------- */
+  @page { size: A4 portrait; margin: 16mm 14mm; }
+  @media print {
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    html, body { width: auto !important; height: auto !important; overflow: visible !important; background: #fff !important; color: #000; }
+    body, body.exam-on { padding: 0 !important; font-size: 10.5pt; }
+    .topbar, .toolbar, .toast, .banner, .start, .qmap, .no-print { display: none !important; }
+    .print-only { display: block !important; }
+    .wrap { max-width: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+    #exam { display: block !important; }
+    .card, .q-card { box-shadow: none; border: 1px solid #bbb; border-radius: 6px; }
+    .q-card { padding: 8px 10px; margin-bottom: 8px; break-inside: avoid; page-break-inside: avoid; }
+    .sec-head { break-after: avoid; page-break-after: avoid; margin: 14px 0 6px; }
+    .sec-head h2 { font-size: 13pt; }
+    .q-ctx, .q-text, .opt { font-size: 10.5pt; }
+    .opts { gap: 3px; }
+    .opt { padding: 3px 6px; border-color: #ddd; }
+    .opt.sel { background: #e8e8f7 !important; border: 1.5px solid #292C74; font-weight: 700; }
+    .ph { border-bottom: 3px solid #EABD2C; padding-bottom: 8px; margin-bottom: 10px; }
+    .ph h1 { margin: 0 0 2px; font-size: 16pt; color: #292C74; }
+    .ph p { margin: 0 0 6px; font-size: 10pt; color: #444; }
+    .ph table { width: 100%; border-collapse: collapse; font-size: 10pt; table-layout: fixed; }
+    .ph td { border: 1px solid #bbb; padding: 4px 8px; overflow-wrap: anywhere; }
+    .ph td b { color: #292C74; }
+    .sum { break-inside: avoid; page-break-inside: avoid; margin-top: 10px; }
+    .sum h3 { margin: 0 0 6px; font-size: 11.5pt; color: #292C74; }
+    .sum .g { display: grid; grid-template-columns: repeat(10, 1fr); gap: 0; border: 1px solid #bbb; }
+    .sum .g div { border: 1px solid #ddd; padding: 3px 0; text-align: center; font-size: 9.5pt; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar" id="topbar" hidden>
+  <div class="ttl">Mid-Term Exam · English through Films<small id="who"></small></div>
+  <div class="timer-box"><span class="lbl">Time left</span><div class="timer" id="timer">90:00</div></div>
+</div>
+
+<div class="wrap">
+
+  <!-- START SCREEN -->
+  <section class="card start" id="startScreen">
+    <h1>Mid-Term Exam</h1>
+    <p class="sub">English through Films · Unit 1 — <em>The Encounter</em> · 50 multiple-choice questions · 90 minutes</p>
+
+    <h2>Exam rules</h2>
+    <ul>
+      <li>The exam has 50 multiple-choice questions: Shadowing expressions (Q1–13), Collocations (Q14–25), Phrasal verbs (Q26–37) and Idioms (Q38–50).</li>
+      <li>Each question has one best answer. Unanswered questions score zero, and there is no penalty for guessing.</li>
+      <li>The 90-minute timer starts as soon as you press <b>Start Exam</b>. Refreshing the page does not reset it.</li>
+      <li>Copy, cut, paste, text selection, right-click and drag-and-drop are disabled.</li>
+      <li>If you leave this window or tab, you get <b>one final warning</b>. If you leave a second time, your exam is <b>locked automatically</b> and you can no longer change your answers.</li>
+      <li>Before you can press <b>Finish &amp; Submit</b>, you must first press <b>Save as PDF</b> and save your PDF file. If you change an answer afterwards, save the PDF again. Then submit the PDF as your instructor tells you.</li>
+      <li>Work on your own. Do not use notes, other people, dictionaries, or AI tools.</li>
+    </ul>
+
+    <div class="fields">
+      <div><label for="inName">Full name</label><input type="text" id="inName" autocomplete="off" placeholder="Your full name"></div>
+      <div><label for="inNim">NIM</label><input type="text" id="inNim" autocomplete="off" placeholder="Student ID"></div>
+    </div>
+    <label class="consent"><input type="checkbox" id="inOk"><span>I have read the rules and understand that the timer cannot be paused.</span></label>
+    <div class="err" id="startErr"></div>
+    <button class="btn-primary" id="startBtn" type="button">Start Exam</button>
+  </section>
+
+  <!-- EXAM -->
+  <main id="exam" hidden>
+    <div class="print-only ph" id="printHead">
+      <h1>Mid-Term Exam — English through Films</h1>
+      <p>Jakarta International University · Unit 1: The Encounter · 50 multiple-choice questions</p>
+      <table>
+        <tr><td><b>Name:</b> <span id="phName"></span></td><td><b>NIM:</b> <span id="phNim"></span></td></tr>
+        <tr><td><b>Started:</b> <span id="phStart"></span></td><td><b>Finished / saved:</b> <span id="phEnd"></span></td></tr>
+        <tr><td><b>Time used:</b> <span id="phUsed"></span></td><td><b>Answered:</b> <span id="phAns"></span> &nbsp; <b>Window left:</b> <span id="phSw"></span> time(s)</td></tr>
+        <tr><td colspan="2"><b>Status:</b> <span id="phStatus"></span></td></tr>
+      </table>
+      <div class="sum"><h3>Answer summary</h3><div class="g" id="phGrid"></div></div>
+    </div>
+
+    <div class="banner danger no-print" id="timeUp" hidden><b>Time is up.</b> Your answers are locked. Press <b>Save as PDF</b> below and submit the file.</div>
+    <div class="banner danger no-print" id="lockBanner" hidden><b>Exam locked.</b> You left the exam window a second time, so your answers were locked automatically. Press <b>Save as PDF</b> below and inform your instructor.</div>
+    <div class="banner no-print" id="finBanner" hidden><b>Exam submitted.</b> Your answers are locked. Press <b>Save as PDF</b> below to keep your copy.</div>
+
+    <section class="card qmap no-print">
+      <h3>Question map</h3>
+      <div class="grid" id="qmapGrid"></div>
+      <div class="legend">Dark = answered. Tap a number to jump to that question.</div>
+    </section>
+
+    <div id="questions"></div>
+  </main>
+</div>
+
+<div class="toolbar no-print" id="toolbar" hidden>
+  <div class="in">
+    <span class="prog" id="prog">0 / 50 answered</span>
+    <button class="btn-ghost" id="pdfBtn" type="button">Save as PDF</button>
+    <button class="btn-gold" id="finishBtn" type="button" disabled title="Save your PDF first to unlock this button">Finish &amp; Submit</button>
+    <div class="tip">Save as PDF: in the print window choose Destination → “Save as PDF”, paper size A4, and turn “Headers and footers” off. <b>Finish &amp; Submit unlocks only after you save your PDF.</b> &nbsp;·&nbsp; <a href="#" id="resetLink" style="color:inherit">Instructor reset</a></div>
+  </div>
+</div>
+
+<div class="modal no-print" id="warnModal" hidden role="alertdialog" aria-modal="true">
+  <div class="box">
+    <h3>FINAL WARNING</h3>
+    <p>You left the exam window. The timer is still running.<br><b>If you leave it one more time, your exam will be locked automatically.</b></p>
+    <button class="btn-primary" id="warnOk" type="button">I understand — return to exam</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var TOTAL_MS = 90 * 60 * 1000;
+  var KEY = "encounter_midterm_exam_v1";
+  var TEACHER_PIN = "2026"; // <-- CHANGE THIS before publishing. Used only for the "Instructor reset" link.
+
+  /* ---------------- QUESTIONS (no answers stored in this file) ---------------- */
+  var SECTIONS = [
+    { title: "Section A — Shadowing Expressions", note: "Everyday spoken expressions from The Encounter.", items: [
+      { c: `Kayla: "Where are you headed?"`, q: `What does she mean?`, o: [`Where did you come from?`, `Where are you going?`, `Where are you working?`, `Where are you staying tonight?`] },
+      { c: `Nick: "You've got to be kidding me."`, q: `What is Nick expressing?`, o: [`Gratitude`, `Agreement`, `Curiosity`, `Disbelief or frustration`] },
+      { c: `Officer Deville: "Sorry for the inconvenience."`, q: `When would a speaker normally say this?`, o: [`When a situation causes someone trouble or delay`, `When telling a joke`, `When refusing an invitation`, `When meeting someone for the first time`] },
+      { c: `Jesus: "I'll tell you what."`, q: `This phrase is mainly used to…`, o: [`end a conversation`, `ask someone to repeat`, `introduce a suggestion or an offer`, `express anger`] },
+      { c: `Melissa: "Don't worry, I'll take care of it." (about paying the bill)`, q: `In this situation, "take care of it" means…`, o: [`look after a sick person`, `handle it (pay for it)`, `forget about it`, `be careful with it`] },
+      { c: `Catherine: "Go ahead."`, q: `What is Catherine doing?`, o: [`Giving permission`, `Asking for directions`, `Saying goodbye`, `Making a complaint`] },
+      { c: `Nick: "You got that right."`, q: `Which sentence is closest in meaning?`, o: [`I disagree with you.`, `I didn't hear you.`, `I'll think about it.`, `I completely agree with you.`] },
+      { c: `Jesus: "I wouldn't be so excited if I were you."`, q: `What kind of message is this?`, o: [`A compliment`, `A formal invitation`, `A warning or piece of advice`, `A promise`] },
+      { c: `Catherine: "You just don't get it, do you?"`, q: `Here, "get it" means…`, o: [`understand`, `receive a gift`, `arrive`, `buy`] },
+      { c: `Nick: "Let me get this straight."`, q: `A speaker usually says this to…`, o: [`change the subject`, `check that they have understood something correctly`, `end an argument`, `ask for money`] },
+      { c: `Melissa: "Am I losing my mind?"`, q: `What does Melissa mean?`, o: [`Am I forgetting where I parked?`, `Am I getting angry?`, `Am I becoming wealthy?`, `Am I imagining things / going crazy?`] },
+      { c: `Kayla: "He probably just overheard us talking."`, q: `What does "overheard" mean?`, o: [`misunderstood`, `repeated`, `heard by accident without being part of the conversation`, `interrupted`] },
+      { c: `Nick: "There's no telling what a man will do."`, q: `Which sentence is closest in meaning?`, o: [`It's impossible to predict what a man will do.`, `A man will always tell you what he is going to do.`, `Nobody listens to men.`, `A man always does the same thing.`] }
+    ]},
+    { title: "Section B — Collocations", note: "Choose the word that goes naturally with the others.", items: [
+      { c: `She decided to ___ her grandmother a surprise visit.`, q: `Which verb completes the collocation?`, o: [`make`, `take`, `pay`, `give`] },
+      { c: `Catherine: "It'll be a ___ start for the both of us."`, q: `Which word completes the collocation?`, o: [`quick`, `fresh`, `sharp`, `tall`] },
+      { c: `The road is closed ___ further notice.`, q: `Which word completes the fixed expression?`, o: [`since`, `for`, `by`, `until`] },
+      { c: `Jesus: "You're the one with the decision to ___."`, q: `Which verb completes the collocation?`, o: [`make`, `do`, `build`, `bring`] },
+      { c: `Please ___ a seat anywhere you like.`, q: `Which verb completes the collocation?`, o: [`put`, `hold`, `take`, `catch`] },
+      { c: `Kayla: "I don't want to be dependent on anyone anymore. I pay my ___ way."`, q: `Which word completes the collocation?`, o: [`self`, `own`, `alone`, `private`] },
+      { c: `The travelers could not drive because of the ___ rain.`, q: `Which adjective collocates with "rain"?`, o: [`high`, `wide`, `thick`, `heavy`] },
+      { c: `"Would you do me a ___?"`, q: `Which word completes the collocation?`, o: [`favor`, `donate`, `present`, `promise`] },
+      { c: `Nick didn't want to ___ a mistake by trusting a stranger.`, q: `Which verb completes the collocation?`, o: [`do`, `make`, `take`, `get`] },
+      { c: `Jesus says he will ___ his promise to Nick's grandmother.`, q: `Which verb completes the collocation?`, o: [`hold`, `do`, `keep`, `put`] },
+      { c: `Please ___ attention to the dialogue in each scene.`, q: `Which verb completes the collocation?`, o: [`do`, `put`, `take`, `pay`] },
+      { c: `"Could you give me a ___ to the airport?"`, q: `Which noun completes the collocation?`, o: [`ride`, `walk`, `travel`, `road`] }
+    ]},
+    { title: "Section C — Phrasal Verbs", note: "Choose the best meaning of the phrasal verb in context.", items: [
+      { c: `Hank: "Sorry about not picking you up…"`, q: `Here, "pick someone up" means…`, o: [`lift them physically`, `choose them`, `teach them`, `collect them (usually by car)`] },
+      { c: `Jesus: "This is an offer you don't want to pass up."`, q: `"Pass up" means…`, o: [`accept quickly`, `hand to someone else`, `refuse or miss an opportunity`, `increase in value`] },
+      { c: `Melissa: "Doesn't that freak you out?"`, q: `"Freak someone out" means…`, o: [`cheer someone up`, `make someone very scared or shocked`, `make someone sleepy`, `help someone`] },
+      { c: `"I'm going to go back and check it out."`, q: `"Check something out" means…`, o: [`look at or investigate it`, `forget about it`, `repair it`, `throw it away`] },
+      { c: `Jesus: "The storm probably knocked down the phone lines."`, q: `"Knock down" means…`, o: [`measure`, `repair`, `connect`, `cause to fall`] },
+      { c: `Officer Deville: "I'm afraid you're gonna have to turn back, sir."`, q: `"Turn back" means…`, o: [`continue forward`, `return the way you came`, `wait for rescue`, `call the police`] },
+      { c: `Jesus: "He's been trying to keep people away from me for years."`, q: `"Keep someone away from" means…`, o: [`invite them closer`, `help them`, `prevent them from coming near`, `introduce them`] },
+      { c: `Kayla: "…when I have to flag down a police officer after my mom OD'd?"`, q: `"Flag down" means…`, o: [`signal a vehicle or person to stop`, `report to the authorities`, `follow closely`, `greet politely`] },
+      { c: `Melissa: "You're lucky I came along when I did."`, q: `"Come along" means…`, o: [`leave quickly`, `appear or arrive`, `go to sleep`, `become angry`] },
+      { c: `A teacher "steps in" to stop an argument between two students.`, q: `"Step in" means…`, o: [`walks into a building`, `climbs a staircase`, `disagrees loudly`, `becomes involved to help or stop something`] },
+      { c: `Kayla: "That's the guy that almost ran me down."`, q: `Here, "run someone down" most likely means…`, o: [`spoke badly about me`, `raced against me`, `nearly hit me with his vehicle`, `called me on the phone`] },
+      { c: `Nick said "Thanks but no thanks" and turned down the free meal.`, q: `"Turn down" means…`, o: [`refuse`, `lower the volume of`, `turn around`, `fold`] }
+    ]},
+    { title: "Section D — Idioms", note: "Choose the best meaning of the idiom in context.", items: [
+      { c: `Melissa: "Running away? So that either means yes or mind your own business."`, q: `"Mind your own business" means…`, o: [`take care of your shop`, `do not interfere in matters that do not concern you`, `be good at your job`, `pay your bills on time`] },
+      { c: `Catherine: "That puts him one up on you."`, q: `"One up on someone" means…`, o: [`equal to someone`, `below someone`, `older than someone`, `ahead of someone / at an advantage`] },
+      { c: `Hank: "He knows we're headed for divorce."`, q: `"Be headed for" means…`, o: [`traveling to`, `avoiding`, `moving toward a likely outcome`, `recovering from`] },
+      { c: `Jesus: "Hank's going through a rough spot right now."`, q: `"A rough spot" means…`, o: [`a difficult period`, `a bumpy road`, `a dirty mark`, `a boring place`] },
+      { c: `Jesus: "I have a special knack for knowing exactly what people want."`, q: `A "knack" is…`, o: [`a heavy habit`, `a natural talent or skill`, `a secret plan`, `a piece of bad luck`] },
+      { c: `Hank: "Starting to get on my nerves as well."`, q: `"Get on someone's nerves" means…`, o: [`calm someone down`, `make someone stronger`, `annoy someone`, `make someone nervous about the future`] },
+      { c: `Nick: "Last Chance Diner. Now that's rich."`, q: `What does Nick mean by "Now that's rich"?`, o: [`That is expensive.`, `That is delicious.`, `That is generous.`, `That is ironic or ridiculous.`] },
+      { c: `Jesus: "I promised her that I would move heaven and earth to reach you."`, q: `"Move heaven and earth" means…`, o: [`do everything possible`, `destroy the world`, `travel a long distance`, `ask for help`] },
+      { c: `Nick: "On second thought, I'm not hungry."`, q: `"On second thought" means…`, o: [`after a long time`, `on the second try`, `after reconsidering`, `as a second choice`] },
+      { c: `Jesus: "I'm gonna call you on that one."`, q: `"Call someone on something" means…`, o: [`phone them`, `challenge them about something untrue`, `invite them`, `praise them`] },
+      { c: `Hank: "Can't say I rooted for you, though."`, q: `"Root for someone" means…`, o: [`dig around them`, `blame them`, `criticize them`, `support or cheer for them`] },
+      { c: `Nick: "Excuse me if I don't take you up on that offer."`, q: `"Take someone up on an offer" means…`, o: [`accept it`, `ignore it`, `increase it`, `report it`] },
+      { c: `Catherine: "I'm due back on planet Earth now."`, q: `What does Catherine mean?`, o: [`I'm going into space.`, `I'm late for work.`, `I'm going to return to reality and stop this nonsense.`, `I want to move to another country.`] }
+    ]}
+  ];
+
+  var FLAT = [];
+  SECTIONS.forEach(function (s, si) { s.items.forEach(function (it) { FLAT.push({ sec: si, item: it }); }); });
+  var N = FLAT.length; // 50
+  var LET = ["A", "B", "C", "D"];
+
+  /* ---------------- state ---------------- */
+  var state = { name: "", nim: "", start: 0, answers: {}, switches: 0, finished: false, finishedAt: 0, endReason: "", warnAck: false, pdfDone: false };
+  var tickTimer = null, printing = false, dialogOpen = false, unloading = false, lastLeave = 0, toastT = null;
+
+  function $(id) { return document.getElementById(id); }
+  function load() { try { var r = localStorage.getItem(KEY); if (r) { var o = JSON.parse(r); if (o && typeof o === "object") state = Object.assign(state, o); } } catch (e) {} }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+  function toast(msg) {
+    var t = $("toast"); t.textContent = msg; t.classList.add("show");
+    if (toastT) clearTimeout(toastT);
+    toastT = setTimeout(function () { t.classList.remove("show"); }, 2400);
+  }
+
+  /* ---------------- render ---------------- */
+  function render() {
+    var host = $("questions"); host.innerHTML = "";
+    var n = 0;
+    SECTIONS.forEach(function (s) {
+      var head = document.createElement("div"); head.className = "sec-head";
+      head.innerHTML = "<h2></h2><p></p>";
+      head.querySelector("h2").textContent = s.title; head.querySelector("p").textContent = s.note;
+      host.appendChild(head);
+      s.items.forEach(function (it) {
+        n++; var idx = n;
+        var card = document.createElement("div"); card.className = "q-card"; card.id = "q" + idx;
+        var html = '<span class="q-num">QUESTION ' + idx + '</span>';
+        if (it.c) html += '<p class="q-ctx"></p>';
+        html += '<p class="q-text"></p><div class="opts"></div>';
+        card.innerHTML = html;
+        if (it.c) card.querySelector(".q-ctx").textContent = it.c;
+        card.querySelector(".q-text").textContent = it.q;
+        var opts = card.querySelector(".opts");
+        it.o.forEach(function (txt, oi) {
+          var lab = document.createElement("label"); lab.className = "opt"; lab.setAttribute("data-q", idx); lab.setAttribute("data-o", oi);
+          lab.innerHTML = '<input type="radio" name="r' + idx + '" value="' + oi + '"><span class="mark">○</span><span class="let">' + LET[oi] + '.</span><span class="txt"></span>';
+          lab.querySelector(".txt").textContent = txt;
+          lab.addEventListener("click", function (e) { e.preventDefault(); choose(idx, oi); });
+          opts.appendChild(lab);
+        });
+        host.appendChild(card);
+      });
+    });
+    var grid = $("qmapGrid"); grid.innerHTML = "";
+    for (var i = 1; i <= N; i++) {
+      (function (k) {
+        var b = document.createElement("button"); b.type = "button"; b.id = "m" + k; b.textContent = k;
+        b.addEventListener("click", function () { var el = $("q" + k); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); });
+        grid.appendChild(b);
+      })(i);
+    }
+    refreshAll();
+  }
+
+  function refreshAll() {
+    for (var i = 1; i <= N; i++) paintQ(i);
+    updateProgress();
+  }
+  function paintQ(i) {
+    var card = $("q" + i); if (!card) return;
+    var a = state.answers[i];
+    var labs = card.querySelectorAll(".opt");
+    labs.forEach(function (l) {
+      var on = (String(l.getAttribute("data-o")) === String(a));
+      l.classList.toggle("sel", on);
+      l.querySelector(".mark").textContent = on ? "●" : "○";
+      l.querySelector("input").checked = on;
+    });
+    var m = $("m" + i); if (m) m.classList.toggle("done", a !== undefined);
+  }
+  function updateProgress() {
+    var c = Object.keys(state.answers).length;
+    $("prog").textContent = c + " / " + N + " answered";
+  }
+  function setFinishEnabled() { $("finishBtn").disabled = state.finished || !state.pdfDone; }
+  function markPdfDone() {
+    if (!state.start || state.finished || state.pdfDone) return;
+    state.pdfDone = true; save(); setFinishEnabled();
+    toast("PDF step done — you can now press Finish & Submit.");
+  }
+  function choose(i, o) {
+    if (state.finished || document.body.classList.contains("locked")) return;
+    var wasDone = state.pdfDone;
+    state.answers[i] = o; if (wasDone) state.pdfDone = false;
+    save(); paintQ(i); updateProgress(); setFinishEnabled();
+    if (wasDone) toast("You changed an answer — save the PDF again before submitting.");
+  }
+
+  /* ---------------- timer ---------------- */
+  function fmt(ms) {
+    if (ms < 0) ms = 0; var s = Math.ceil(ms / 1000); var m = Math.floor(s / 60); var r = s % 60;
+    return (m < 10 ? "0" : "") + m + ":" + (r < 10 ? "0" : "") + r;
+  }
+  function tick() {
+    var left = state.start + TOTAL_MS - Date.now();
+    var t = $("timer"); t.textContent = fmt(left);
+    t.classList.toggle("warn", left <= 10 * 60 * 1000 && left > 60 * 1000);
+    t.classList.toggle("danger", left <= 60 * 1000);
+    if (left <= 0 && !state.finished) { endExam("time"); }
+  }
+  function startTicking() { if (tickTimer) clearInterval(tickTimer); tick(); tickTimer = setInterval(tick, 500); }
+
+  function lock() { document.body.classList.add("locked"); }
+  function showEndBanner() {
+    $("timeUp").hidden = state.endReason !== "time";
+    $("finBanner").hidden = state.endReason !== "submit";
+    $("lockBanner").hidden = state.endReason !== "left";
+  }
+  function showWarn() { $("warnModal").hidden = false; }
+  function closeWarn() { $("warnModal").hidden = true; }
+  function endExam(mode) {
+    state.finished = true; state.endReason = mode;
+    state.finishedAt = Math.min(Date.now(), state.start + TOTAL_MS); save();
+    if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
+    lock(); closeWarn();
+    $("timer").textContent = mode === "time" ? "00:00" : fmt(state.start + TOTAL_MS - state.finishedAt);
+    $("timer").classList.remove("warn", "danger");
+    $("finishBtn").disabled = true;
+    showEndBanner();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  /* ---------------- start / resume ---------------- */
+  function showExam() {
+    document.body.classList.add("exam-on");
+    $("startScreen").hidden = true; $("exam").hidden = false; $("topbar").hidden = false; $("toolbar").hidden = false;
+    $("who").textContent = state.name + " · " + state.nim;
+    render(); setFinishEnabled();
+    if (state.finished) {
+      lock(); $("finishBtn").disabled = true;
+      if (!state.endReason) state.endReason = ((state.finishedAt || 0) >= state.start + TOTAL_MS - 1000) ? "time" : "submit";
+      $("timer").textContent = state.endReason === "time" ? "00:00" : fmt(state.start + TOTAL_MS - (state.finishedAt || Date.now()));
+      showEndBanner();
+    } else {
+      if (state.switches === 1 && !state.warnAck) showWarn();
+      startTicking();
+    }
+  }
+  function startExam() {
+    var name = $("inName").value.trim(), nim = $("inNim").value.trim();
+    if (name.length < 2 || nim.length < 3) { $("startErr").textContent = "Please enter your full name and NIM."; return; }
+    if (!$("inOk").checked) { $("startErr").textContent = "Please tick the box to confirm you have read the rules."; return; }
+    state = { name: name, nim: nim, start: Date.now(), answers: {}, switches: 0, finished: false, finishedAt: 0, endReason: "", warnAck: false, pdfDone: false };
+    save(); showExam();
+    window.scrollTo(0, 0);
+  }
+
+  /* ---------------- PDF ---------------- */
+  function dt(ms) { try { return new Date(ms).toLocaleString(); } catch (e) { return ""; } }
+  function syncPrint() {
+    $("phName").textContent = state.name; $("phNim").textContent = state.nim;
+    $("phStart").textContent = dt(state.start);
+    var end = state.finished ? state.finishedAt : Math.min(Date.now(), state.start + TOTAL_MS);
+    $("phEnd").textContent = dt(end) + (state.finished ? "" : " (saved before finishing)");
+    var used = Math.max(0, end - state.start);
+    var mm = Math.floor(used / 60000), ss = Math.floor((used % 60000) / 1000);
+    $("phUsed").textContent = mm + " min " + ss + " s";
+    $("phAns").textContent = Object.keys(state.answers).length + " / " + N;
+    $("phSw").textContent = state.switches;
+    $("phStatus").textContent = state.endReason === "left" ? "LOCKED automatically — student left the exam window a second time"
+      : state.endReason === "time" ? "Time expired (auto-locked)"
+      : state.finished ? "Submitted by student" : "Saved before finishing";
+    var g = $("phGrid"); g.innerHTML = "";
+    for (var i = 1; i <= N; i++) {
+      var a = state.answers[i]; var d = document.createElement("div");
+      d.textContent = i + ". " + (a === undefined ? "—" : LET[a]); g.appendChild(d);
+    }
+  }
+  function doPrint() {
+    syncPrint(); printing = true;
+    setTimeout(function () { window.print(); markPdfDone(); }, 60);
+    setTimeout(function () { printing = false; }, 120000);
+  }
+  window.addEventListener("beforeprint", function () { printing = true; syncPrint(); });
+  window.addEventListener("afterprint", function () { setTimeout(function () { printing = false; }, 800); markPdfDone(); });
+
+  /* ---------------- protections ---------------- */
+  function isField(t) { var el = t && t.nodeType === 1 ? t : (t && t.parentElement); return !!(el && el.closest && el.closest("input[type='text']")); }
+  ["copy", "cut", "paste"].forEach(function (ev) {
+    document.addEventListener(ev, function (e) { e.preventDefault(); toast("Copy / cut / paste is disabled during the exam."); });
+  });
+  ["dragstart", "drag", "dragenter", "dragover", "drop"].forEach(function (ev) {
+    document.addEventListener(ev, function (e) { e.preventDefault(); if (ev === "drop") toast("Drag-and-drop is disabled during the exam."); });
+  });
+  document.addEventListener("contextmenu", function (e) { e.preventDefault(); toast("Right-click is disabled during the exam."); });
+  document.addEventListener("selectstart", function (e) { if (!isField(e.target)) e.preventDefault(); });
+  document.addEventListener("keydown", function (e) {
+    if ((e.ctrlKey || e.metaKey) && !e.altKey) {
+      var k = (e.key || "").toLowerCase();
+      if (k === "c" || k === "x" || k === "v" || k === "a") { e.preventDefault(); toast("Keyboard copy / paste / select-all is disabled."); }
+    }
+  });
+
+  function noteLeave() {
+    if (!state.start || state.finished || printing || dialogOpen || unloading) return;
+    var now = Date.now(); if (now - lastLeave < 1500) return; lastLeave = now;
+    state.switches++;
+    if (state.switches >= 2) { endExam("left"); return; }   // 2nd time: lock automatically
+    state.warnAck = false; save(); showWarn();               // 1st time: one final warning
+  }
+  document.addEventListener("visibilitychange", function () { if (document.hidden) noteLeave(); });
+  window.addEventListener("blur", function () { setTimeout(function () { if (!document.hasFocus()) noteLeave(); }, 250); });
+  window.addEventListener("beforeunload", function () { unloading = true; });
+  window.addEventListener("pagehide", function (e) { if (!e.persisted) unloading = true; });
+  window.addEventListener("pageshow", function () { unloading = false; });
+
+  /* ---------------- wiring ---------------- */
+  $("startBtn").addEventListener("click", startExam);
+  $("pdfBtn").addEventListener("click", doPrint);
+  $("warnOk").addEventListener("click", function () { state.warnAck = true; save(); closeWarn(); });
+  $("finishBtn").addEventListener("click", function () {
+    if (!state.pdfDone) { toast("Save your PDF first, then you can Finish & Submit."); return; }
+    var left = N - Object.keys(state.answers).length;
+    var msg = (left > 0 ? ("You still have " + left + " unanswered question(s). Submit anyway?") : "Submit your exam now? You cannot change answers afterwards.")
+      + "\n\nOnly continue if your PDF file was saved successfully.";
+    dialogOpen = true; var yes = window.confirm(msg); setTimeout(function () { dialogOpen = false; }, 800);
+    if (yes) endExam("submit");
+  });
+
+  $("resetLink").addEventListener("click", function (e) {
+    e.preventDefault();
+    dialogOpen = true; var p = window.prompt("Instructor PIN — this clears the saved exam on THIS device and starts a fresh attempt:"); setTimeout(function () { dialogOpen = false; }, 800);
+    if (p === null) return;
+    if (p === TEACHER_PIN) {
+      try { localStorage.removeItem(KEY); } catch (err) {}
+      window.location.reload();
+    } else {
+      toast("Incorrect PIN.");
+    }
+  });
+
+  load();
+  if (state.start) { showExam(); }
+})();
+</script>
+</body>
+</html>
